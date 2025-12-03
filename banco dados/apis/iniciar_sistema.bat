@@ -11,15 +11,16 @@ echo         Versao Ultimate - Backend Server
 echo ========================================================
 echo.
 
-:: 2. Verifica se o Node.js está instalado
+:: 2. Verifica se o Node.js esta instalado
+:: Se der erro aqui, ele pula para o final com PAUSE para voce ler
 node -v >nul 2>&1
 if %errorlevel% neq 0 goto ERRO_NODE
 
-:: 3. Configuração essencial para ES Modules (import/export)
-if not exist "package.json" (
-    echo [CONFIG] Criando configuracao para modulos modernos (ESM)...
-    echo { "name": "bioteste-backend", "version": "1.0.0", "type": "module", "main": "api_server.js" } > package.json
-)
+:: 3. Configuracao essencial para ES Modules (sem parenteses para evitar erro de sintaxe)
+if exist "package.json" goto SKIP_JSON
+echo [CONFIG] Criando configuracao para modulos modernos (ESM)...
+echo { "name": "bioteste-backend", "version": "1.0.0", "type": "module", "main": "api_server.js" } > package.json
+:SKIP_JSON
 
 :: 4. Verifica se precisa instalar bibliotecas
 if exist "node_modules" goto INICIAR_SERVER
@@ -74,6 +75,7 @@ exit
 color 0C
 echo.
 echo [ATENCAO] O servidor parou inesperadamente.
+echo Verifique se o arquivo 'api_server.js' esta na mesma pasta.
 echo Verifique as mensagens de erro acima para corrigir.
 echo.
 pause
