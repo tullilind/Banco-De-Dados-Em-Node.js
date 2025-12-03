@@ -1,6 +1,6 @@
 // api_server.js
 // SERVIDOR BACKEND "ULTIMATE" - LABORATÓRIO BIOTESTE
-// Versão: Final Completa + Agenda + Sistema de Backup Profissional
+// Versão: Final Corrigida e Completa (Sem Resumos)
 
 // =================================================================
 // 1. IMPORTAÇÕES E CONFIGURAÇÕES
@@ -23,7 +23,7 @@ const EMAIL_API = 'https://script.google.com/macros/s/AKfycbwRSQt1nsmkaIAEXZo4Mb
 
 // Configuração de diretórios
 const TEMP_UPLOADS_DIR = './temp_uploads';
-const BACKUPS_DIR = './backups_automaticos'; // Para segurança na restauração
+const BACKUPS_DIR = './backups_automaticos'; 
 
 // Garante que pastas existam
 if (!fs.existsSync(TEMP_UPLOADS_DIR)) fs.mkdirSync(TEMP_UPLOADS_DIR);
@@ -63,7 +63,6 @@ async function registrarLog(usuario, acao, detalhes) {
         const dataHora = new Date().toLocaleString('pt-BR');
         const autor = usuario ? (usuario.usuario || usuario.cpf || `ID: ${usuario.id}`) : 'Sistema/Anônimo';
         
-        // Verifica se DB está aberto antes de logar
         if(db) {
             await db.run(
                 `INSERT INTO Logs_Sistema (autor, acao, detalhes, data_hora) VALUES (?, ?, ?, ?)`,
@@ -97,7 +96,6 @@ async function enviarEmail({ para, assunto, mensagem }) {
 async function iniciarBancoDados() {
     if (!db) db = await open({ filename: DB_FILE, driver: sqlite3.Database });
     await db.run('PRAGMA foreign_keys = ON;');
-    // Ativa modo WAL para melhor performance e concorrência no backup
     await db.run('PRAGMA journal_mode = WAL;'); 
 
     // TABELAS
@@ -188,56 +186,45 @@ const isAdminOrStaff = (req, res, next) => {
 };
 
 // =================================================================
-// 5. SISTEMA DE BACKUP E RESTAURAÇÃO (PROFISSIONAL)
+// 5. SISTEMA DE BACKUP E RESTAURAÇÃO
 // =================================================================
 
-// Fazer Backup
 app.get('/api/admin/backup', autenticar, isAdminOrStaff, async (req, res) => {
     try {
-        // Formatar data para nome do arquivo: bioteste_backup_YYYY-MM-DD_HH-MM.sqlite
         const date = new Date();
         const dateStr = date.toISOString().slice(0,10);
         const timeStr = date.toTimeString().slice(0,5).replace(':','-');
         const backupName = `bioteste_backup_${dateStr}_${timeStr}.sqlite`;
         const tempPath = path.resolve(TEMP_UPLOADS_DIR, backupName);
 
-        // Força escrita de dados pendentes no disco antes de copiar
         await db.run('PRAGMA wal_checkpoint(FULL)');
-
-        // Fecha temporariamente para cópia segura (embora WAL permita leitura, fechar é mais seguro para cópia simples)
         await db.close();
         
         fs.copyFileSync(DB_FILE, tempPath);
         
-        // Reabre imediatamente
         await iniciarBancoDados();
         await registrarLog(req.user, 'REALIZAR_BACKUP', { arquivo: backupName });
 
         res.download(tempPath, backupName, (err) => {
             if (!err) {
-                // Remove arquivo temporário após download
                 try { fs.unlinkSync(tempPath); } catch(e){}
             } else {
                 console.error("Erro no download:", err);
             }
         });
     } catch (erro) {
-        // Tenta reabrir se falhou no meio
         try { await iniciarBancoDados(); } catch(e){}
         console.error(erro);
         res.status(500).json({ error: "Falha ao gerar backup." });
     }
 });
 
-// Restaurar Backup
 app.post('/api/admin/restore', autenticar, isAdminOrStaff, upload.single('backup'), async (req, res) => {
     if(!req.file) return res.status(400).json({ error: "Arquivo de backup não enviado." });
 
     try {
         const novoDbPath = req.file.path;
         
-        // 1. Validar se o arquivo enviado é um SQLite válido (verificação básica de cabeçalho)
-        // O cabeçalho SQLite tem 16 bytes: "SQLite format 3\0"
         const buffer = Buffer.alloc(16);
         const fd = fs.openSync(novoDbPath, 'r');
         fs.readSync(fd, buffer, 0, 16, 0);
@@ -245,47 +232,97 @@ app.post('/api/admin/restore', autenticar, isAdminOrStaff, upload.single('backup
         
         if (buffer.toString() !== 'SQLite format 3\0') {
             fs.unlinkSync(novoDbPath);
-            return res.status(400).json({ error: "Arquivo inválido. Envie um arquivo .sqlite legítimo." });
+            return res.status(400).json({ error: "Arquivo inválido." });
         }
 
-        // 2. Criar Backup de Segurança (Rollback) do estado ATUAL antes de substituir
         const timestamp = Date.now();
         const safetyBackupPath = path.resolve(BACKUPS_DIR, `safety_before_restore_${timestamp}.sqlite`);
         
         await db.close();
-        
         if (fs.existsSync(DB_FILE)) {
             fs.copyFileSync(DB_FILE, safetyBackupPath);
-            console.log(`[RESTORE] Backup de segurança criado em: ${safetyBackupPath}`);
         }
-
-        // 3. Substituir
         fs.renameSync(novoDbPath, DB_FILE);
         
-        // 4. Reiniciar
         await iniciarBancoDados();
-        await registrarLog(req.user, 'RESTAURAR_BACKUP', { status: 'Sucesso', safety_backup: safetyBackupPath });
+        await registrarLog(req.user, 'RESTAURAR_BACKUP', { status: 'Sucesso' });
 
-        res.json({ success: true, message: "Sistema restaurado com sucesso! Backup de segurança do estado anterior foi salvo no servidor." });
+        res.json({ success: true, message: "Sistema restaurado com sucesso!" });
 
     } catch (erro) {
-        console.error(erro);
-        // Tenta reabrir o banco original
         try { await iniciarBancoDados(); } catch(e){}
-        res.status(500).json({ error: "Erro crítico na restauração. Contate o suporte." });
+        res.status(500).json({ error: "Erro crítico na restauração." });
     }
 });
 
-// Listar Logs (Para ver Backups/Restores)
 app.get('/api/admin/logs', autenticar, isAdminOrStaff, async (req, res) => {
     const logs = await db.all("SELECT * FROM Logs_Sistema ORDER BY id DESC LIMIT 100");
     res.json({ success: true, data: logs });
 });
 
+// =================================================================
+// 6. ROTAS: AUTH, USUÁRIOS E FUNCIONALIDADES
+// =================================================================
 
-// =================================================================
-// 6. ROTAS: AUTH E FUNCIONALIDADES DO SISTEMA
-// =================================================================
+// --- 6.1 CRUD DE USUÁRIOS (PARA FUNCIONAR O CADASTRO NO HTML) ---
+app.post('/api/usuarios', async (req, res) => {
+    const { nome, cpf, senha, email, foto_base64, acesso, data_nascimento } = req.body;
+    
+    // Validação básica
+    if (!nome || !cpf || !senha || !email) {
+        return res.status(400).json({ error: "Dados incompletos (Nome, CPF, Senha, Email são obrigatórios)." });
+    }
+
+    try {
+        const hash = await bcrypt.hash(senha, 10);
+        const r = await db.run(
+            `INSERT INTO Usuarios (nome, cpf, senha, email, foto_base64, acesso, data_nascimento) 
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            nome, cpf, hash, email, foto_base64, acesso || 'Paciente', data_nascimento
+        );
+        
+        await registrarLog(null, 'CADASTRO_USUARIO', { id: r.lastID, nome });
+        res.status(201).json({ success: true, id: r.lastID });
+    } catch (e) {
+        res.status(400).json({ error: "Erro ao criar usuário. CPF ou Email já cadastrados?" });
+    }
+});
+
+app.get('/api/usuarios', autenticar, isAdminOrStaff, async (req, res) => {
+    const lista = await db.all("SELECT id, nome, cpf, email, acesso, data_nascimento FROM Usuarios");
+    res.json({ success: true, data: lista });
+});
+
+app.put('/api/usuarios/:id', autenticar, async (req, res) => {
+    // Apenas o próprio usuário ou Admin/Staff pode editar
+    if (req.user.tipo === 'Usuario' && req.user.id != req.params.id) {
+        return res.status(403).json({ error: "Proibido" });
+    }
+    
+    const body = req.body;
+    if (body.senha) body.senha = await bcrypt.hash(body.senha, 10);
+    
+    const keys = Object.keys(body);
+    if (keys.length === 0) return res.status(400).json({ error: "Sem dados para atualizar" });
+
+    const sets = keys.map(k => `${k}=?`).join(',');
+    const vals = Object.values(body);
+    
+    try {
+        await db.run(`UPDATE Usuarios SET ${sets} WHERE id=?`, ...vals, req.params.id);
+        res.json({ success: true });
+    } catch(e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.delete('/api/usuarios/:id', autenticar, isAdminOrStaff, async (req, res) => {
+    await db.run('DELETE FROM Usuarios WHERE id = ?', req.params.id);
+    await registrarLog(req.user, 'DELETAR_USUARIO', { id: req.params.id });
+    res.json({ success: true });
+});
+
+// --- 6.2 AUTH E RECUPERAÇÃO ---
 
 app.post('/api/auth/login', async (req, res) => {
     const { cpf, senha } = req.body;
