@@ -178,49 +178,86 @@ echo.
 
 :: Instalar dependências principais
 echo [6/8] Instalando dependências do projeto...
-echo    (Isso pode levar alguns minutos)
+echo    (Isso pode levar alguns minutos - aguarde...)
 echo.
-call npm install express sqlite sqlite3 multer bcryptjs jsonwebtoken cors crypto >nul 2>&1
-if %errorLevel% neq 0 (
+
+:: Tentar instalar com saída visível para debug
+call npm install express sqlite sqlite3 multer bcryptjs jsonwebtoken cors crypto
+set ERRO_NPM=%errorLevel%
+
+if %ERRO_NPM% neq 0 (
     color 0C
+    echo.
     echo    ❌ Erro ao instalar dependências
+    echo.
+    echo    💡 Possíveis causas:
+    echo       • Sem conexão com internet
+    echo       • Proxy/Firewall bloqueando npm
+    echo       • Falta de permissões
+    echo.
+    echo    🔧 Soluções:
+    echo       1. Verifique sua conexão de internet
+    echo       2. Execute novamente como administrador
+    echo       3. Tente manualmente: npm install
     echo.
     pause
     goto MENU_PRINCIPAL
 )
-echo    ✓ Dependências instaladas
+echo.
+echo    ✓ Dependências instaladas com sucesso
 echo.
 
 :: Instalar node-windows
 echo [7/8] Instalando node-windows (gerenciador de serviços)...
-call npm install -g node-windows >nul 2>&1
-if %errorLevel% neq 0 (
+echo.
+
+call npm install -g node-windows
+set ERRO_NODE_WIN=%errorLevel%
+
+if %ERRO_NODE_WIN% neq 0 (
     color 0C
+    echo.
     echo    ❌ Erro ao instalar node-windows
     echo.
-    echo    💡 Tente executar manualmente: npm install -g node-windows
+    echo    💡 Possíveis soluções:
+    echo       1. Verifique conexão com internet
+    echo       2. Execute como administrador
+    echo       3. Tente: npm install -g node-windows --force
     echo.
     pause
     goto MENU_PRINCIPAL
 )
-echo    ✓ node-windows instalado
+echo.
+echo    ✓ node-windows instalado com sucesso
 echo.
 
 :: Criar script de instalação do serviço
 echo [8/8] Criando e instalando serviço Windows...
+echo.
+
 call :CRIAR_SCRIPT_INSTALACAO
-node __install_service_temp.js >nul 2>&1
-if %errorLevel% neq 0 (
+
+echo    • Executando instalação do serviço...
+node __install_service_temp.js
+set ERRO_SERVICO=%errorLevel%
+
+if %ERRO_SERVICO% neq 0 (
     color 0C
+    echo.
     echo    ❌ Erro ao instalar serviço
     echo.
-    echo    💡 Verifique os logs ou tente manualmente
+    echo    💡 Verifique:
+    echo       • Se o node-windows foi instalado corretamente
+    echo       • Se tem privilégios de administrador
+    echo       • Os logs acima para mais detalhes
     echo.
     pause
     del __install_service_temp.js 2>nul
     goto MENU_PRINCIPAL
 )
-echo    ✓ Serviço instalado e iniciado
+
+echo.
+echo    ✓ Serviço instalado e iniciado com sucesso
 
 :: Limpar arquivo temporário
 del __install_service_temp.js 2>nul
