@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
-title Sistema Laboratório Bioteste - Instalador Serviço Windows v2.0
+title Sistema Laboratório Bioteste - Instalador Serviço Windows v2.1
 color 0B
 
 :: ====================================================================
 :: INSTALADOR AUTOMÁTICO DE SERVIÇO WINDOWS - BIOTESTE API
-:: Versão 2.0 - Tudo em um único arquivo
+:: Versão 2.1 - CORRIGIDO - Tudo em um único arquivo
 :: ====================================================================
 
 cd /d "%~dp0"
@@ -15,17 +15,17 @@ cls
 echo.
 echo ╔════════════════════════════════════════════════════════════════╗
 echo ║    SISTEMA LABORATÓRIO BIOTESTE - GERENCIADOR DE SERVIÇO      ║
-echo ║                      Versão 2.0 - Windows                      ║
+echo ║                      Versão 2.1 - Windows                      ║
 echo ╚════════════════════════════════════════════════════════════════╝
 echo.
 
 :: Verificar status do serviço
-sc query BiotesteAPI | find "RUNNING" >nul 2>&1
+sc query BiotesteAPI 2>nul | find "RUNNING" >nul 2>&1
 if %errorLevel% equ 0 (
     set STATUS=🟢 RODANDO
     color 0A
 ) else (
-    sc query BiotesteAPI >nul 2>&1
+    sc query BiotesteAPI 2>nul >nul 2>&1
     if %errorLevel% equ 0 (
         set STATUS=🟡 PARADO
         color 0E
@@ -178,55 +178,50 @@ echo.
 
 :: Instalar dependências principais
 echo [6/8] Instalando dependências do projeto...
-echo    (Isso pode levar alguns minutos - aguarde...)
+echo    (Aguarde - isso pode levar alguns minutos...)
 echo.
 
-:: Tentar instalar com saída visível para debug
-call npm install express sqlite sqlite3 multer bcryptjs jsonwebtoken cors crypto
-set ERRO_NPM=%errorLevel%
+:: Limpar cache do npm primeiro
+echo    • Limpando cache do npm...
+call npm cache clean --force >nul 2>&1
 
-if %ERRO_NPM% neq 0 (
-    color 0C
-    echo.
-    echo    ❌ Erro ao instalar dependências
-    echo.
-    echo    💡 Possíveis causas:
-    echo       • Sem conexão com internet
-    echo       • Proxy/Firewall bloqueando npm
-    echo       • Falta de permissões
-    echo.
-    echo    🔧 Soluções:
-    echo       1. Verifique sua conexão de internet
-    echo       2. Execute novamente como administrador
-    echo       3. Tente manualmente: npm install
-    echo.
-    pause
-    goto MENU_PRINCIPAL
-)
+:: Instalar pacotes um por um para melhor controle
+echo    • Instalando express...
+call npm install express --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NPM_INSTALL
+
+echo    • Instalando sqlite e sqlite3...
+call npm install sqlite sqlite3 --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NPM_INSTALL
+
+echo    • Instalando multer...
+call npm install multer --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NPM_INSTALL
+
+echo    • Instalando bcryptjs...
+call npm install bcryptjs --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NPM_INSTALL
+
+echo    • Instalando jsonwebtoken...
+call npm install jsonwebtoken --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NPM_INSTALL
+
+echo    • Instalando cors...
+call npm install cors --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NPM_INSTALL
+
 echo.
-echo    ✓ Dependências instaladas com sucesso
+echo    ✓ Todas as dependências instaladas com sucesso
 echo.
 
 :: Instalar node-windows
 echo [7/8] Instalando node-windows (gerenciador de serviços)...
+echo    (Aguarde...)
 echo.
 
-call npm install -g node-windows
-set ERRO_NODE_WIN=%errorLevel%
+call npm install -g node-windows --no-audit --no-fund --loglevel=error
+if %errorLevel% neq 0 goto ERRO_NODE_WINDOWS
 
-if %ERRO_NODE_WIN% neq 0 (
-    color 0C
-    echo.
-    echo    ❌ Erro ao instalar node-windows
-    echo.
-    echo    💡 Possíveis soluções:
-    echo       1. Verifique conexão com internet
-    echo       2. Execute como administrador
-    echo       3. Tente: npm install -g node-windows --force
-    echo.
-    pause
-    goto MENU_PRINCIPAL
-)
 echo.
 echo    ✓ node-windows instalado com sucesso
 echo.
@@ -239,22 +234,11 @@ call :CRIAR_SCRIPT_INSTALACAO
 
 echo    • Executando instalação do serviço...
 node __install_service_temp.js
-set ERRO_SERVICO=%errorLevel%
+if %errorLevel% neq 0 goto ERRO_INSTALACAO_SERVICO
 
-if %ERRO_SERVICO% neq 0 (
-    color 0C
-    echo.
-    echo    ❌ Erro ao instalar serviço
-    echo.
-    echo    💡 Verifique:
-    echo       • Se o node-windows foi instalado corretamente
-    echo       • Se tem privilégios de administrador
-    echo       • Os logs acima para mais detalhes
-    echo.
-    pause
-    del __install_service_temp.js 2>nul
-    goto MENU_PRINCIPAL
-)
+:: Aguardar serviço iniciar
+echo    • Aguardando serviço iniciar...
+timeout /t 3 /nobreak >nul
 
 echo.
 echo    ✓ Serviço instalado e iniciado com sucesso
@@ -283,6 +267,82 @@ echo.
 echo 🌐 TESTAR: http://localhost:3000/api/status
 echo.
 pause
+goto MENU_PRINCIPAL
+
+:: ====================================================================
+:: TRATAMENTO DE ERROS
+:: ====================================================================
+
+:ERRO_NPM_INSTALL
+color 0C
+echo.
+echo ╔════════════════════════════════════════════════════════════════╗
+echo ║                  ❌ ERRO NA INSTALAÇÃO                         ║
+echo ╚════════════════════════════════════════════════════════════════╝
+echo.
+echo ❌ Erro ao instalar dependências do projeto
+echo.
+echo 💡 POSSÍVEIS CAUSAS:
+echo    • Sem conexão com internet
+echo    • Proxy/Firewall bloqueando npm
+echo    • Falta de permissões
+echo    • Repositórios do npm inacessíveis
+echo.
+echo 🔧 SOLUÇÕES:
+echo    1. Verifique sua conexão de internet
+echo    2. Desative temporariamente o antivírus/firewall
+echo    3. Execute novamente como administrador
+echo    4. Tente configurar proxy: npm config set proxy http://seu-proxy:porta
+echo    5. Tente manualmente: npm install
+echo.
+echo 📌 Se o erro persistir, instale manualmente:
+echo    npm install express sqlite sqlite3 multer bcryptjs jsonwebtoken cors
+echo.
+pause
+del __install_service_temp.js 2>nul
+goto MENU_PRINCIPAL
+
+:ERRO_NODE_WINDOWS
+color 0C
+echo.
+echo ╔════════════════════════════════════════════════════════════════╗
+echo ║                  ❌ ERRO NO NODE-WINDOWS                       ║
+echo ╚════════════════════════════════════════════════════════════════╝
+echo.
+echo ❌ Erro ao instalar node-windows
+echo.
+echo 💡 POSSÍVEIS SOLUÇÕES:
+echo    1. Verifique conexão com internet
+echo    2. Execute como administrador
+echo    3. Tente: npm install -g node-windows --force
+echo    4. Limpe o cache: npm cache clean --force
+echo.
+pause
+del __install_service_temp.js 2>nul
+goto MENU_PRINCIPAL
+
+:ERRO_INSTALACAO_SERVICO
+color 0C
+echo.
+echo ╔════════════════════════════════════════════════════════════════╗
+echo ║                  ❌ ERRO AO CRIAR SERVIÇO                      ║
+echo ╚════════════════════════════════════════════════════════════════╝
+echo.
+echo ❌ Erro ao instalar serviço Windows
+echo.
+echo 💡 VERIFIQUE:
+echo    • Se o node-windows foi instalado corretamente
+echo    • Se tem privilégios de administrador
+echo    • Os logs acima para mais detalhes
+echo    • Se já existe um serviço com o mesmo nome
+echo.
+echo 🔧 TENTE:
+echo    1. Desinstale qualquer serviço anterior (opção 5)
+echo    2. Reinicie o computador
+echo    3. Execute novamente este instalador
+echo.
+pause
+del __install_service_temp.js 2>nul
 goto MENU_PRINCIPAL
 
 :: ====================================================================
@@ -403,6 +463,9 @@ echo.
 call :CRIAR_SCRIPT_DESINSTALACAO
 node __uninstall_service_temp.js
 
+:: Aguardar conclusão
+timeout /t 2 /nobreak >nul
+
 del __uninstall_service_temp.js 2>nul
 
 echo.
@@ -428,11 +491,15 @@ echo ╔════════════════════════
 echo ║                  STATUS DETALHADO DO SERVIÇO                   ║
 echo ╚════════════════════════════════════════════════════════════════╝
 echo.
-sc query BiotesteAPI
-echo.
-echo ───────────────────────────────────────────────────────────────
-echo.
-sc qc BiotesteAPI
+sc query BiotesteAPI 2>nul
+if %errorLevel% neq 0 (
+    echo ⚠️  Serviço não está instalado
+) else (
+    echo.
+    echo ───────────────────────────────────────────────────────────────
+    echo.
+    sc qc BiotesteAPI
+)
 echo.
 pause
 goto MENU_PRINCIPAL
@@ -489,7 +556,8 @@ echo   [1] 📊 Ver Logs em Tempo Real
 echo   [2] 🔧 Configurar Tipo de Inicialização
 echo   [3] 💾 Informações do Sistema
 echo   [4] 🗑️  Limpar Logs Antigos
-echo   [5] 🔙 Voltar ao Menu Principal
+echo   [5] 🔄 Reinstalar Dependências
+echo   [6] 🔙 Voltar ao Menu Principal
 echo.
 set /p OPC_AV="Digite sua opção: "
 
@@ -497,7 +565,8 @@ if "%OPC_AV%"=="1" goto LOGS_TEMPO_REAL
 if "%OPC_AV%"=="2" goto CONFIG_INIT
 if "%OPC_AV%"=="3" goto INFO_SISTEMA
 if "%OPC_AV%"=="4" goto LIMPAR_LOGS
-if "%OPC_AV%"=="5" goto MENU_PRINCIPAL
+if "%OPC_AV%"=="5" goto REINSTALAR_DEPS
+if "%OPC_AV%"=="6" goto MENU_PRINCIPAL
 goto AVANCADO
 
 :LOGS_TEMPO_REAL
@@ -593,6 +662,34 @@ if /i "%CONFIRMA_LIMPAR%"=="S" (
     echo ❌ Cancelado
 )
 echo.
+pause
+goto AVANCADO
+
+:REINSTALAR_DEPS
+cls
+echo.
+echo 🔄 Reinstalar Dependências
+echo.
+echo ⚠️  Esta ação irá reinstalar todos os pacotes npm
+echo.
+set /p CONFIRMA_REINSTALL="Confirma? (S/N): "
+
+if /i not "%CONFIRMA_REINSTALL%"=="S" (
+    echo ❌ Cancelado
+    pause
+    goto AVANCADO
+)
+
+echo.
+echo 📦 Removendo node_modules...
+if exist "node_modules" (
+    rmdir /S /Q node_modules
+)
+
+echo 🔄 Reinstalando dependências...
+call npm install
+echo.
+echo ✅ Concluído!
 pause
 goto AVANCADO
 
