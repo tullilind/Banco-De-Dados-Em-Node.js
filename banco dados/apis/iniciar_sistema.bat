@@ -102,10 +102,10 @@ echo [1/8] Verificando Node.js...
 node --version >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
-    echo ❌ Node.js NÃO encontrado!
+    echo    ❌ Node.js NÃO encontrado!
     echo.
-    echo 📥 Você precisa instalar o Node.js primeiro:
-    echo    https://nodejs.org (versão LTS recomendada)
+    echo    📥 Você precisa instalar o Node.js primeiro:
+    echo       https://nodejs.org (versão LTS recomendada)
     echo.
     pause
     goto MENU_PRINCIPAL
@@ -120,7 +120,8 @@ echo [2/8] Verificando npm...
 npm --version >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
-    echo ❌ npm não encontrado!
+    echo    ❌ npm não encontrado!
+    echo.
     pause
     goto MENU_PRINCIPAL
 )
@@ -133,9 +134,9 @@ echo.
 echo [3/8] Verificando arquivos do sistema...
 if not exist "api_server.js" (
     color 0C
-    echo ❌ Arquivo 'api_server.js' não encontrado!
+    echo    ❌ Arquivo 'api_server.js' não encontrado!
     echo.
-    echo 💡 Certifique-se de que o arquivo api_server.js está na mesma pasta.
+    echo    💡 Certifique-se de que o arquivo api_server.js está na mesma pasta.
     echo.
     pause
     goto MENU_PRINCIPAL
@@ -179,10 +180,11 @@ echo.
 echo [6/8] Instalando dependências do projeto...
 echo    (Isso pode levar alguns minutos)
 echo.
-call npm install express sqlite sqlite3 multer bcryptjs jsonwebtoken cors crypto
+call npm install express sqlite sqlite3 multer bcryptjs jsonwebtoken cors crypto >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
-    echo ❌ Erro ao instalar dependências
+    echo    ❌ Erro ao instalar dependências
+    echo.
     pause
     goto MENU_PRINCIPAL
 )
@@ -191,12 +193,13 @@ echo.
 
 :: Instalar node-windows
 echo [7/8] Instalando node-windows (gerenciador de serviços)...
-call npm install -g node-windows
+call npm install -g node-windows >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
-    echo ❌ Erro ao instalar node-windows
+    echo    ❌ Erro ao instalar node-windows
     echo.
-    echo 💡 Tente executar manualmente: npm install -g node-windows
+    echo    💡 Tente executar manualmente: npm install -g node-windows
+    echo.
     pause
     goto MENU_PRINCIPAL
 )
@@ -206,14 +209,18 @@ echo.
 :: Criar script de instalação do serviço
 echo [8/8] Criando e instalando serviço Windows...
 call :CRIAR_SCRIPT_INSTALACAO
-node __install_service_temp.js
+node __install_service_temp.js >nul 2>&1
 if %errorLevel% neq 0 (
     color 0C
-    echo ❌ Erro ao instalar serviço
+    echo    ❌ Erro ao instalar serviço
+    echo.
+    echo    💡 Verifique os logs ou tente manualmente
+    echo.
     pause
     del __install_service_temp.js 2>nul
     goto MENU_PRINCIPAL
 )
+echo    ✓ Serviço instalado e iniciado
 
 :: Limpar arquivo temporário
 del __install_service_temp.js 2>nul
