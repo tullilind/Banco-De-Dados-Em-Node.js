@@ -13,156 +13,89 @@
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
-      --card-bg: rgba(255, 255, 255, 0.85); /* Mais transparência para efeito vidro */
+      --card-bg: rgba(255, 255, 255, 0.90);
       --shadow: 0 20px 40px -5px rgba(11, 114, 200, 0.15);
       font-family: 'Inter', sans-serif;
     }
 
     body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
       background-color: #f6fbff;
       background-image: radial-gradient(#dff1ff 1px, transparent 1px);
-      background-size: 24px 24px;
-      padding:20px;
-      user-select: none; 
-      -webkit-user-select: none;
-      color: var(--text-main);
+      background-size: 24px 24px; padding:20px;
+      user-select: none; -webkit-user-select: none; color: var(--text-main);
     }
 
     .card{
-      width:100%;
-      max-width:380px;
-      background: var(--card-bg);
-      backdrop-filter: blur(12px); /* O Efeito de Vidro */
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.6);
-      border-radius: 24px;
-      box-shadow: var(--shadow);
-      padding: 40px 32px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+      width:100%; max-width:380px; background: var(--card-bg);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.6); border-radius: 24px;
+      box-shadow: var(--shadow); padding: 40px 32px; text-align: center;
+      position: relative; overflow: hidden;
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Animação de erro (Tremida) */
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-    @keyframes shake {
-      10%, 90% { transform: translate3d(-1px, 0, 0); }
-      20%, 80% { transform: translate3d(2px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-      40%, 60% { transform: translate3d(4px, 0, 0); }
-    }
+    @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
 
     .logo-circle{
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 16px;
+      width: 72px; height: 72px; margin: 0 auto 16px;
       background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(11, 114, 200, 0.25);
-      transform: rotate(-5deg);
-      transition: transform 0.3s;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 20px; box-shadow: 0 10px 25px rgba(11, 114, 200, 0.25);
+      transform: rotate(-5deg); transition: transform 0.3s;
     }
     .card:hover .logo-circle { transform: rotate(0deg) scale(1.05); }
-
     .logo-circle svg{ width:36px; height:36px; fill:#fff; }
 
-    h1{ margin: 0 0 4px; font-size: 22px; color: var(--text-main); font-weight: 700; letter-spacing: -0.5px; }
-    h2{ margin: 0 0 24px; font-size: 15px; color: var(--text-muted); font-weight: 400; }
+    h1{ margin: 0 0 4px; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    h2{ margin: 0 0 20px; font-size: 15px; color: var(--text-muted); font-weight: 400; }
+
+    /* ESTILO DAS ABAS (TIPO DE LOGIN) */
+    .type-toggle {
+        display: flex; background: #eef6fc; padding: 4px; border-radius: 12px; margin-bottom: 20px;
+    }
+    .type-btn {
+        flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-muted);
+        font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s;
+    }
+    .type-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
     form{ display:flex; flex-direction:column; gap:16px; text-align:left; }
-    
     label{ font-size:13px; color: var(--primary); font-weight: 600; margin-bottom:6px; display: block; }
-
     .input-wrap{ position:relative; }
 
     input{
-      width:100%;
-      padding: 14px 16px;
-      padding-right: 40px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      outline: none;
-      font-size: 15px;
-      color: var(--text-main);
-      background: #f8fafc;
-      box-sizing: border-box;
-      transition: all 0.2s ease;
-      user-select: text; 
-      font-family: inherit;
+      width:100%; padding: 14px 16px; padding-right: 40px;
+      border: 2px solid #e2e8f0; border-radius: 12px; outline: none;
+      font-size: 15px; color: var(--text-main); background: #f8fafc;
+      box-sizing: border-box; transition: all 0.2s ease; user-select: text; 
     }
+    input:focus{ border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(11, 114, 200, 0.1); }
 
-    input:focus{
-      border-color: var(--primary);
-      background: #fff;
-      box-shadow: 0 0 0 4px rgba(11, 114, 200, 0.1);
-    }
-
-    .icon-right{
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      cursor: pointer; color: #94a3b8; transition: color 0.2s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .icon-right:hover { color: var(--primary); }
-
+    .icon-right{ position: absolute; right: 14px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; display: flex; }
     .btn{
-      display: flex; align-items: center; justify-content: center;
-      width: 100%; margin-top: 8px; padding: 14px;
-      border-radius: 12px; border: 0;
-      background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: white; font-weight: 600; font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(11, 114, 200, 0.2);
-      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 8px; padding: 14px;
+      border-radius: 12px; border: 0; background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white; font-weight: 600; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(11, 114, 200, 0.2);
+      transition: transform 0.2s;
     }
-    .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(11, 114, 200, 0.3); }
-    .btn:active:not(:disabled) { transform: translateY(0); }
-    .btn:disabled { opacity: 0.7; cursor: not-allowed; filter: grayscale(0.5); }
+    .btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-    /* Spinner Animado */
-    .spinner {
-      width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3);
-      border-radius: 50%; border-top-color: #fff;
-      animation: spin 0.8s linear infinite; margin-right: 8px; display: none;
-    }
+    .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; margin-right: 8px; display: none; }
     .btn.loading .spinner { display: block; }
-    .btn.loading span { opacity: 0.9; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .link-action{
-      margin-top: 20px; text-align: center; color: var(--primary);
-      font-size: 14px; font-weight: 500; text-decoration: none;
-      display: inline-block; cursor: pointer; transition: opacity 0.2s;
-    }
-    .link-action:hover{ opacity: 0.8; text-decoration: underline; }
+    .link-action{ margin-top: 20px; text-align: center; color: var(--primary); font-size: 14px; font-weight: 500; cursor: pointer; }
+    .link-action:hover{ text-decoration: underline; }
 
-    .error-msg, .success-msg {
-      font-size: 13px; text-align: center; margin-top: 10px;
-      padding: 10px; border-radius: 8px; display: none; font-weight: 500;
-      animation: fadeIn 0.3s;
-    }
+    .error-msg, .success-msg { font-size: 13px; text-align: center; margin-top: 10px; padding: 10px; border-radius: 8px; display: none; font-weight: 500; }
     .error-msg { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; }
     .success-msg { color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; }
-
     .hidden { display: none !important; }
-    
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media(min-width:760px){ .card{ padding: 50px 40px; } }
   </style>
 </head>
 <body>
@@ -175,11 +108,17 @@
 
     <div id="view-login" class="fade-in">
       <h2>Acesse sua conta</h2>
+
+      <div class="type-toggle">
+        <button type="button" class="type-btn active" id="btnTypeUser" onclick="setLoginType('user')">Paciente</button>
+        <button type="button" class="type-btn" id="btnTypeFunc" onclick="setLoginType('func')">Colaborador</button>
+      </div>
+
       <form id="formLogin">
         <div>
-          <label for="user">Usuário</label>
+          <label id="lblLogin" for="loginInput">CPF</label>
           <div class="input-wrap">
-            <input id="user" name="user" type="text" placeholder="Digite seu usuário" required>
+            <input id="loginInput" name="login" type="text" placeholder="000.000.000-00" required>
           </div>
         </div>
         <div>
@@ -204,9 +143,7 @@
 
     <div id="view-recover" class="hidden fade-in">
       <h2>Recuperar Acesso</h2>
-      <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px; line-height: 1.5;">
-        Digite seu e-mail cadastrado. Enviaremos um link seguro.
-      </p>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Digite seu e-mail cadastrado.</p>
       
       <form id="formRecover">
         <div>
@@ -231,137 +168,140 @@
   <script src="./Segura/ARSOLUSSGURITY.js"></script>
 
   <script type="module">
-    // ATENÇÃO: Caminho atualizado para a pasta Segura
-    import { BASE_URL } from './Segura/api.js';
+    import { api } from './Segura/api.js';
 
-    // Elementos do DOM
+    // Variáveis
+    let currentType = 'user'; // 'user' (Paciente) ou 'func' (Colaborador)
+    
+    // Elementos DOM
     const viewLogin = document.getElementById('view-login');
     const viewRecover = document.getElementById('view-recover');
-    const passInput = document.getElementById('pass');
     const mainCard = document.getElementById('mainCard');
+    const loginInput = document.getElementById('loginInput');
+    const lblLogin = document.getElementById('lblLogin');
     
-    // Utilitário de Loading
+    // --- FUNÇÕES DE INTERFACE ---
+    
+    // Função para alterar o tipo de login (Paciente vs Colaborador)
+    window.setLoginType = (type) => {
+        currentType = type;
+        document.getElementById('login-error').style.display = 'none';
+
+        if(type === 'user') {
+            document.getElementById('btnTypeUser').classList.add('active');
+            document.getElementById('btnTypeFunc').classList.remove('active');
+            lblLogin.innerText = "CPF";
+            loginInput.placeholder = "000.000.000-00";
+        } else {
+            document.getElementById('btnTypeUser').classList.remove('active');
+            document.getElementById('btnTypeFunc').classList.add('active');
+            lblLogin.innerText = "Usuário";
+            loginInput.placeholder = "joao.silva";
+        }
+    };
+
     function setLoading(btn, isLoading, textDefault) {
       if (isLoading) {
-        btn.classList.add('loading');
-        btn.disabled = true;
+        btn.classList.add('loading'); btn.disabled = true;
         btn.querySelector('span').innerText = "Processando...";
       } else {
-        btn.classList.remove('loading');
-        btn.disabled = false;
+        btn.classList.remove('loading'); btn.disabled = false;
         btn.querySelector('span').innerText = textDefault;
       }
     }
 
-    // Utilitário de Erro (Shake)
     function showError(elementId, message) {
       const el = document.getElementById(elementId);
-      el.innerText = message;
-      el.style.display = 'block';
-      
-      mainCard.classList.remove('shake');
-      void mainCard.offsetWidth; // Trigger reflow
-      mainCard.classList.add('shake');
+      el.innerText = message; el.style.display = 'block';
+      mainCard.classList.remove('shake'); void mainCard.offsetWidth; mainCard.classList.add('shake');
     }
 
-    // Alternar Senha
+    // --- EVENT LISTENERS ---
+
     document.getElementById('btnTogglePass').addEventListener('click', () => {
-        const type = passInput.type === 'password' ? 'text' : 'password';
-        passInput.type = type;
-        document.getElementById('btnTogglePass').style.color = type === 'text' ? 'var(--primary)' : '#94a3b8';
+        const pass = document.getElementById('pass');
+        pass.type = pass.type === 'password' ? 'text' : 'password';
     });
 
-    // Navegação entre telas
-    function switchView(target) {
-      document.querySelectorAll('.error-msg, .success-msg').forEach(el => el.style.display = 'none');
-      if(target === 'recover'){
+    document.getElementById('linkToRecover').addEventListener('click', () => {
         viewLogin.classList.add('hidden');
         viewRecover.classList.remove('hidden');
-      } else {
+    });
+
+    document.getElementById('linkToLogin').addEventListener('click', () => {
         viewRecover.classList.add('hidden');
         viewLogin.classList.remove('hidden');
-      }
-    }
+    });
 
-    document.getElementById('linkToRecover').addEventListener('click', () => switchView('recover'));
-    document.getElementById('linkToLogin').addEventListener('click', () => switchView('login'));
-
-    // --- LOGIN ---
+    // --- LÓGICA DE LOGIN ---
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnLogin');
-      const errorDiv = document.getElementById('login-error');
-      
-      errorDiv.style.display = 'none';
+      document.getElementById('login-error').style.display = 'none';
       setLoading(btn, true, "Entrar");
 
+      const loginValue = loginInput.value;
+      const passwordValue = document.getElementById('pass').value;
+
       try {
-        const user = document.getElementById('user').value;
-        const pass = passInput.value;
+        let data;
 
-        // Requisição usando a BASE_URL importada da pasta Segura
-        const response = await fetch(`${BASE_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: user, password: pass })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          if(data.token) localStorage.setItem('authToken', data.token);
-
-          // Feedback visual de sucesso
-          btn.style.background = "var(--success)";
-          btn.querySelector('span').innerText = "Sucesso!";
-          
-          setTimeout(() => {
-             // Lógica de redirecionamento por cargo
-             if (data.role === 'admin' || data.isAdmin) window.location.href = '/painel-admin.html';
-             else if (data.role === 'medico') window.location.href = '/area-medica.html';
-             else window.location.href = '/dashboard.html';
-          }, 600);
-
+        // Decide qual API chamar baseado na aba selecionada
+        if(currentType === 'user') {
+            // Login Paciente: Envia CPF
+            data = await api.loginUser(loginValue, passwordValue);
         } else {
-          throw new Error(data.message || "Usuário ou senha incorretos.");
+            // Login Funcionário: Envia Usuário
+            data = await api.loginEmployee(loginValue, passwordValue);
+        }
+
+        if (data.success) {
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('userData', JSON.stringify(data.user));
+
+            btn.style.background = "var(--success)";
+            btn.querySelector('span').innerText = "Sucesso!";
+
+            setTimeout(() => {
+                // Redirecionamento Baseado no Retorno da API
+                // 1. É Admin?
+                if (data.user.acesso === 'ADM') {
+                    window.location.href = '/painel-admin.html';
+                } 
+                // 2. É Funcionário? (tem campo 'cargo')
+                else if (data.user.cargo) {
+                    window.location.href = '/area-medica.html';
+                } 
+                // 3. É Paciente Comum
+                else {
+                    window.location.href = '/dashboard.html';
+                }
+            }, 800);
         }
       } catch (err) {
         setLoading(btn, false, "Entrar");
-        showError('login-error', err.message || "Erro de conexão.");
+        showError('login-error', err.message);
       }
     });
 
-    // --- RECUPERAÇÃO ---
+    // --- LÓGICA DE RECUPERAÇÃO ---
     document.getElementById('formRecover').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnRecover');
-      const errorDiv = document.getElementById('rec-error');
-      const successDiv = document.getElementById('rec-success');
+      const email = document.getElementById('rec-email').value;
 
-      errorDiv.style.display = 'none';
-      successDiv.style.display = 'none';
       setLoading(btn, true, "Enviar Link");
-
+      
       try {
-        const email = document.getElementById('rec-email').value;
-        
-        const response = await fetch(`${BASE_URL}/recover`, { 
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: email })
-        });
+        // Envia flag true se for funcionário, false se for paciente
+        const isFunc = (currentType === 'func');
+        await api.recover(email, isFunc);
 
-        const data = await response.json();
-
-        if (response.ok) {
-          successDiv.innerText = "Link enviado! Verifique sua caixa de entrada.";
-          successDiv.style.display = 'block';
-          document.getElementById('formRecover').reset();
-        } else {
-          throw new Error(data.message || "Falha ao enviar e-mail.");
-        }
+        document.getElementById('rec-success').innerText = "Verifique seu e-mail!";
+        document.getElementById('rec-success').style.display = 'block';
+        document.getElementById('formRecover').reset();
       } catch (err) {
-        showError('rec-error', err.message || "Erro ao conectar.");
+        showError('rec-error', err.message);
       } finally {
         setLoading(btn, false, "Enviar Link");
       }
