@@ -134,15 +134,15 @@
           <label for="pass">Senha</label>
           <div class="input-wrap">
             <input id="pass" name="password" type="password" placeholder="Sua senha" required>
-            <div class="icon-right" onclick="togglePass()" title="Mostrar senha">
-               <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <div class="icon-right" id="btnTogglePass" title="Mostrar senha">
+               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
             </div>
           </div>
         </div>
         <div id="login-error" class="error-msg"></div>
         <button class="btn" type="submit" id="btnLogin">Acessar Conta</button>
       </form>
-      <a class="link-action" onclick="switchView('recover')">Esqueci minha senha</a>
+      <a class="link-action" id="linkToRecover">Esqueci minha senha</a>
     </div>
 
     <div id="view-recover" class="hidden">
@@ -160,27 +160,35 @@
         <div id="rec-success" class="success-msg"></div>
         <button class="btn" type="submit" id="btnRecover">Enviar Link</button>
       </form>
-      <a class="link-action" onclick="switchView('login')">Voltar para Login</a>
+      <a class="link-action" id="linkToLogin">Voltar para Login</a>
     </div>
 
   </div>
 
-  <script>
-    // --- CONFIGURAÇÃO DA API ---
-    const BASE_URL = "http://localhost:3000"; 
-    
+  <script src="./ARSOLUSSGURITY.js"></script>
+
+  <script type="module">
+    // Importa a URL base do seu arquivo de configuração
+    import { BASE_URL } from './api.js';
+
     // --- Elementos ---
     const viewLogin = document.getElementById('view-login');
     const viewRecover = document.getElementById('view-recover');
     const passInput = document.getElementById('pass');
     
-    // --- Funções Visuais ---
+    // --- Funções Visuais (Listeners) ---
     
-    // Alternar entre Login e Recuperação
+    // Botão de Olho (Senha)
+    document.getElementById('btnTogglePass').addEventListener('click', () => {
+        passInput.type = passInput.type === 'password' ? 'text' : 'password';
+    });
+
+    // Navegação entre Telas
+    document.getElementById('linkToRecover').addEventListener('click', () => switchView('recover'));
+    document.getElementById('linkToLogin').addEventListener('click', () => switchView('login'));
+
     function switchView(viewName) {
-      // Limpa mensagens ao trocar
       document.querySelectorAll('.error-msg, .success-msg').forEach(el => el.style.display = 'none');
-      
       if(viewName === 'recover'){
         viewLogin.classList.add('hidden');
         viewRecover.classList.remove('hidden');
@@ -188,11 +196,6 @@
         viewRecover.classList.add('hidden');
         viewLogin.classList.remove('hidden');
       }
-    }
-
-    // Mostrar/Ocultar Senha
-    function togglePass() {
-      passInput.type = passInput.type === 'password' ? 'text' : 'password';
     }
 
     // --- LÓGICA DE LOGIN (Multi-Login) ---
@@ -209,6 +212,7 @@
       errorDiv.style.display = 'none';
 
       try {
+        // Usa a BASE_URL importada do arquivo api.js
         const response = await fetch(`${BASE_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -218,19 +222,15 @@
         const data = await response.json();
 
         if (response.ok) {
-          // *** LÓGICA DE MULTI LOGIN ***
-          // Aqui decidimos para onde o usuário vai baseado na resposta da API
-          
-          // 1. Salvar Token (se existir)
+          // 1. Salvar Token
           if(data.token) localStorage.setItem('authToken', data.token);
 
-          // 2. Redirecionamento baseado no tipo de usuário (Exemplo)
+          // 2. Redirecionamento baseado no cargo (Multi-Login)
           if (data.role === 'admin' || data.isAdmin === true) {
             window.location.href = '/painel-admin.html';
           } else if (data.role === 'medico') {
             window.location.href = '/area-medica.html';
           } else {
-            // Usuário padrão
             window.location.href = '/dashboard.html';
           }
         } else {
@@ -259,7 +259,8 @@
       successDiv.style.display = 'none';
 
       try {
-        const response = await fetch(`${BASE_URL}/recover`, { // ou /forgot-password
+        // Usa a BASE_URL importada
+        const response = await fetch(`${BASE_URL}/recover`, { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: email })
