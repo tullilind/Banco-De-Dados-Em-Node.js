@@ -13,7 +13,7 @@
       --card-bg:#ffffff;
       --radius:18px;
       --shadow: 0 8px 30px rgba(8,30,50,0.08);
-      font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      font-family: 'Inter', sans-serif;
     }
 
     body{
@@ -26,6 +26,9 @@
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'><g fill='%23dff1ff' fill-opacity='0.9'><path d='M60 12h8v12h-8z'/><g transform='translate(10,20)'><path d='M60 20c-4 0-6 2-6 6v10c0 6 8 12 12 12s12-6 12-12V26c0-4-2-6-6-6H60z' opacity='0.7'/></g><g transform='translate(110,110)'><path d='M60 20c-4 0-6 2-6 6v10c0 6 8 12 12 12s12-6 12-12V26c0-4-2-6-6-6H60z' opacity='0.5'/></g></g></svg>");
       background-repeat: repeat;
       padding:40px 16px;
+      /* Impede seleção de texto visualmente também */
+      user-select: none; 
+      -webkit-user-select: none;
     }
 
     .card{
@@ -37,7 +40,7 @@
       padding:30px 28px 22px;
       text-align:center;
       position: relative;
-      overflow: hidden; /* Para transições limpas */
+      overflow: hidden;
     }
 
     .logo-circle{
@@ -51,7 +54,6 @@
       border-radius:50%;
       box-shadow: 0 6px 18px rgba(11,114,200,0.18);
     }
-
     .logo-circle svg{width:44px;height:44px;fill:#fff}
 
     h1{ margin: 6px 0 8px; font-size:20px; color:#0b2340; font-weight:700; }
@@ -62,19 +64,20 @@
 
     .input-wrap{ position:relative; }
 
-    input[type="text"], input[type="password"], input[type="email"]{
+    input{
       width:100%; padding:12px 14px;
       border:2px solid #d6e9fb; border-radius:10px;
       outline:none; font-size:15px; color:#023047;
       background:transparent; box-sizing: border-box;
       transition: all .2s;
+      /* Permite selecionar texto DENTRO do input (importante para o usuário corrigir o que digitou) */
+      user-select: text; 
     }
-
     input:focus{ border-color:var(--blue); box-shadow:0 6px 20px rgba(11,114,200,0.08); }
 
     .icon-right{
       position:absolute;right:10px;top:50%;transform:translateY(-50%);
-      cursor:pointer;color:#4b5563;
+      cursor:pointer;color:#4b5563; display:flex; align-items:center;
     }
 
     .btn{
@@ -92,25 +95,11 @@
     }
     .link-action:hover{ text-decoration: underline; }
 
-    .error-msg {
-      color: #d32f2f; font-size: 13px; text-align: center;
-      margin-top: 8px; display: none; background: #ffebee;
-      padding: 8px; border-radius: 6px;
-    }
-
-    .success-msg {
-      color: #2e7d32; font-size: 13px; text-align: center;
-      margin-top: 8px; display: none; background: #e8f5e9;
-      padding: 8px; border-radius: 6px;
-    }
-
-    /* Utilitário para alternar telas */
+    .error-msg { color: #d32f2f; font-size: 13px; text-align: center; margin-top: 8px; display: none; background: #ffebee; padding: 8px; border-radius: 6px; }
+    .success-msg { color: #2e7d32; font-size: 13px; text-align: center; margin-top: 8px; display: none; background: #e8f5e9; padding: 8px; border-radius: 6px; }
     .hidden { display: none !important; }
 
-    @media(min-width:760px){
-      body{padding:80px}
-      .card{width:420px;padding:40px}
-    }
+    @media(min-width:760px){ body{padding:80px} .card{width:420px;padding:40px} }
   </style>
 </head>
 <body>
@@ -162,30 +151,34 @@
       </form>
       <a class="link-action" id="linkToLogin">Voltar para Login</a>
     </div>
-
   </div>
 
   <script src="./ARSOLUSSGURITY.js"></script>
 
   <script type="module">
-    // Importa a URL base do seu arquivo de configuração
     import { BASE_URL } from './api.js';
 
-    // --- Elementos ---
+    // Elementos
     const viewLogin = document.getElementById('view-login');
     const viewRecover = document.getElementById('view-recover');
     const passInput = document.getElementById('pass');
     
-    // --- Funções Visuais (Listeners) ---
+    // --- Event Listeners (Ações de Clique) ---
     
-    // Botão de Olho (Senha)
+    // Botão mostrar/ocultar senha
     document.getElementById('btnTogglePass').addEventListener('click', () => {
         passInput.type = passInput.type === 'password' ? 'text' : 'password';
     });
 
-    // Navegação entre Telas
-    document.getElementById('linkToRecover').addEventListener('click', () => switchView('recover'));
-    document.getElementById('linkToLogin').addEventListener('click', () => switchView('login'));
+    // Ir para Recuperação
+    document.getElementById('linkToRecover').addEventListener('click', () => {
+        switchView('recover');
+    });
+
+    // Voltar para Login
+    document.getElementById('linkToLogin').addEventListener('click', () => {
+        switchView('login');
+    });
 
     function switchView(viewName) {
       document.querySelectorAll('.error-msg, .success-msg').forEach(el => el.style.display = 'none');
@@ -198,7 +191,7 @@
       }
     }
 
-    // --- LÓGICA DE LOGIN (Multi-Login) ---
+    // --- LÓGICA DE LOGIN ---
     document.getElementById('formLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -212,7 +205,6 @@
       errorDiv.style.display = 'none';
 
       try {
-        // Usa a BASE_URL importada do arquivo api.js
         const response = await fetch(`${BASE_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -222,10 +214,10 @@
         const data = await response.json();
 
         if (response.ok) {
-          // 1. Salvar Token
+          // Salvar Token
           if(data.token) localStorage.setItem('authToken', data.token);
 
-          // 2. Redirecionamento baseado no cargo (Multi-Login)
+          // Redirecionamento por Cargo
           if (data.role === 'admin' || data.isAdmin === true) {
             window.location.href = '/painel-admin.html';
           } else if (data.role === 'medico') {
@@ -259,7 +251,6 @@
       successDiv.style.display = 'none';
 
       try {
-        // Usa a BASE_URL importada
         const response = await fetch(`${BASE_URL}/recover`, { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
