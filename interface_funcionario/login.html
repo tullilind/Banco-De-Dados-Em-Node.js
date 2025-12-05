@@ -9,12 +9,11 @@
     :root{
       --primary: #0b72c8;
       --primary-dark: #085a9c;
-      --bg-gradient: linear-gradient(135deg, #f6fbff 0%, #eef6fc 100%);
       --text-main: #1e293b;
       --text-muted: #64748b;
       --danger: #ef4444;
       --success: #10b981;
-      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-bg: rgba(255, 255, 255, 0.85); /* Mais transparência para efeito vidro */
       --shadow: 0 20px 40px -5px rgba(11, 114, 200, 0.15);
       font-family: 'Inter', sans-serif;
     }
@@ -26,7 +25,6 @@
       align-items:center;
       justify-content:center;
       background-color: #f6fbff;
-      /* Padrão de fundo sutil */
       background-image: radial-gradient(#dff1ff 1px, transparent 1px);
       background-size: 24px 24px;
       padding:20px;
@@ -39,7 +37,8 @@
       width:100%;
       max-width:380px;
       background: var(--card-bg);
-      backdrop-filter: blur(12px); /* Efeito de vidro */
+      backdrop-filter: blur(12px); /* O Efeito de Vidro */
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255,255,255,0.6);
       border-radius: 24px;
       box-shadow: var(--shadow);
@@ -47,7 +46,6 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      /* Animação de entrada */
       animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -73,7 +71,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 20px; /* Quadrado arredondado é mais moderno */
+      border-radius: 20px;
       box-shadow: 0 10px 25px rgba(11, 114, 200, 0.25);
       transform: rotate(-5deg);
       transition: transform 0.3s;
@@ -94,7 +92,7 @@
     input{
       width:100%;
       padding: 14px 16px;
-      padding-right: 40px; /* Espaço para o ícone */
+      padding-right: 40px;
       border: 2px solid #e2e8f0;
       border-radius: 12px;
       outline: none;
@@ -113,7 +111,6 @@
       box-shadow: 0 0 0 4px rgba(11, 114, 200, 0.1);
     }
 
-    /* Ícone dentro do input */
     .icon-right{
       position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
       cursor: pointer; color: #94a3b8; transition: color 0.2s;
@@ -135,7 +132,7 @@
     .btn:active:not(:disabled) { transform: translateY(0); }
     .btn:disabled { opacity: 0.7; cursor: not-allowed; filter: grayscale(0.5); }
 
-    /* Spinner de Loading */
+    /* Spinner Animado */
     .spinner {
       width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3);
       border-radius: 50%; border-top-color: #fff;
@@ -162,7 +159,6 @@
 
     .hidden { display: none !important; }
     
-    /* Animação suave entre telas */
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -232,10 +228,11 @@
     </div>
   </div>
 
-  <script src="./ARSOLUSSGURITY.js"></script>
+  <script src="./Segura/ARSOLUSSGURITY.js"></script>
 
   <script type="module">
-    import { BASE_URL } from './api.js';
+    // ATENÇÃO: Caminho atualizado para a pasta Segura
+    import { BASE_URL } from './Segura/api.js';
 
     // Elementos do DOM
     const viewLogin = document.getElementById('view-login');
@@ -243,7 +240,7 @@
     const passInput = document.getElementById('pass');
     const mainCard = document.getElementById('mainCard');
     
-    // Utilitário de Loading no Botão
+    // Utilitário de Loading
     function setLoading(btn, isLoading, textDefault) {
       if (isLoading) {
         btn.classList.add('loading');
@@ -256,13 +253,12 @@
       }
     }
 
-    // Utilitário de Erro com Animação Shake
+    // Utilitário de Erro (Shake)
     function showError(elementId, message) {
       const el = document.getElementById(elementId);
       el.innerText = message;
       el.style.display = 'block';
       
-      // Adiciona classe shake e remove depois
       mainCard.classList.remove('shake');
       void mainCard.offsetWidth; // Trigger reflow
       mainCard.classList.add('shake');
@@ -272,14 +268,12 @@
     document.getElementById('btnTogglePass').addEventListener('click', () => {
         const type = passInput.type === 'password' ? 'text' : 'password';
         passInput.type = type;
-        // Opcional: mudar ícone
         document.getElementById('btnTogglePass').style.color = type === 'text' ? 'var(--primary)' : '#94a3b8';
     });
 
-    // Navegação
+    // Navegação entre telas
     function switchView(target) {
       document.querySelectorAll('.error-msg, .success-msg').forEach(el => el.style.display = 'none');
-      
       if(target === 'recover'){
         viewLogin.classList.add('hidden');
         viewRecover.classList.remove('hidden');
@@ -305,6 +299,7 @@
         const user = document.getElementById('user').value;
         const pass = passInput.value;
 
+        // Requisição usando a BASE_URL importada da pasta Segura
         const response = await fetch(`${BASE_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -316,15 +311,16 @@
         if (response.ok) {
           if(data.token) localStorage.setItem('authToken', data.token);
 
-          // Efeito visual de sucesso antes de redirecionar
+          // Feedback visual de sucesso
           btn.style.background = "var(--success)";
           btn.querySelector('span').innerText = "Sucesso!";
           
           setTimeout(() => {
+             // Lógica de redirecionamento por cargo
              if (data.role === 'admin' || data.isAdmin) window.location.href = '/painel-admin.html';
              else if (data.role === 'medico') window.location.href = '/area-medica.html';
              else window.location.href = '/dashboard.html';
-          }, 500);
+          }, 600);
 
         } else {
           throw new Error(data.message || "Usuário ou senha incorretos.");
